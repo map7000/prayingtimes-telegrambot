@@ -1,0 +1,13 @@
+server:
+  port: 8080
+  shutdown: graceful
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+    context-path: /
+
+api:
+  timeskeeper:
+    url: ${TIMESKEEPER_URL:http://localhost:8080}
