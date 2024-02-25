@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prayingtymes-telegrambot-config
+  labels:
+    app: prayingtymes-telegrambot
+data:
+  java_options: "-Dspring.config.location=classpath:/application.yaml -XX:InitialRAMPercentage=25.0 -XX:MaxRAMPercentage=75.0"
+  timeskeeper_url: "http://prayingtymes-timeskeeper-service:8080"

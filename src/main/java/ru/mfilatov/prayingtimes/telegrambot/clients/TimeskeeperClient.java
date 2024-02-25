@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.mfilatov.prayingtimes.telegrambot.model.PrayingTimes;
 
-@FeignClient(value = "timeskeeperClient", url = "http://localhost:8080/")
+@FeignClient(value = "timeskeeperClient", url = "${api.timeskeeper.url}")
 public interface TimeskeeperClient {
   @GetMapping(path = "getTimesByCoordinates")
   PrayingTimes getTimesByCoordinates(
