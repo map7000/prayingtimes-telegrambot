@@ -6,31 +6,38 @@ metadata:
     app: prayingtymes-telegrambot
 spec:
   replicas: 1
-  spec:
-    containers:
-      - name: telegrambot
-        image: %IMAGE_URL%
-        ports:
-          - containerPort: 8080
-        imagePullPolicy: Always
-        env:
-          - name: JDK_JAVA_OPTIONS
-            valueFrom:
-              configMapKeyRef:
-                name: prayingtymes-telegrambot-config
-                key: java_options
-          - name: TIMESKEEPER_URL
-            valueFrom:
-              configMapKeyRef:
-                name: prayingtymes-telegrambot-config
-                key: timeskeeper_url
-          - name: BOT_NAME
-            valueFrom:
-              secretKeyRef:
-                name: prayingtymes-telegrambot-secret
-                key: bot_name
-          - name: BOT_TOKEN
-            valueFrom:
-              secretKeyRef:
-                name: prayingtymes-telegrambot-secret
-                key: bot_token
+  selector:
+    matchLabels:
+      app: prayingtymes-telegrambot
+  template:
+    metadata:
+      labels:
+        app: prayingtymes-telegrambot
+    spec:
+      containers:
+        - name: telegrambot
+          image: docker.io/map7000/prayingtimes-telegrambot:0.0.1.SNAPSHOT
+          ports:
+            - containerPort: 8080
+          imagePullPolicy: Always
+          env:
+            - name: JDK_JAVA_OPTIONS
+              valueFrom:
+                configMapKeyRef:
+                  name: prayingtymes-telegrambot-config
+                  key: java_options
+            - name: TIMESKEEPER_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: prayingtymes-telegrambot-config
+                  key: timeskeeper_url
+            - name: BOT_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: prayingtymes-telegrambot-secret
+                  key: bot_name
+            - name: BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: prayingtymes-telegrambot-secret
+                  key: bot_token
