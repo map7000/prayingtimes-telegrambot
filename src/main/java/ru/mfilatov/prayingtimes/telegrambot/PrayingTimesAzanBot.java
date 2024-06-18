@@ -13,6 +13,7 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.mfilatov.prayingtimes.telegrambot.clients.TimeskeeperClient;
+import ru.mfilatov.prayingtimes.telegrambot.repositorys.TelegramUserRepository;
 
 @Slf4j
 @Component

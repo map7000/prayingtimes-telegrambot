@@ -1,12 +1,17 @@
 package ru.mfilatov.prayingtimes.telegrambot.commands;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import ru.mfilatov.prayingtimes.telegrambot.repositorys.TelegramUserRepository;
 
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 @Slf4j
 public class UserCommandHandler implements CommandHandler{
+    @Autowired
+    TelegramUserRepository telegramUserRepository;
+
     private final Predicate<String> commandPattern = Pattern.compile("get|set\s[aA-zZ]{4,10}\s[aA-zZ]{4,10}").asPredicate();
     public String handle(Long userId, String command) {
         if(!commandPattern.test(command)) {
