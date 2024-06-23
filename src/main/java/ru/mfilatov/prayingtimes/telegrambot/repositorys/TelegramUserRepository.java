@@ -7,6 +7,6 @@ import ru.mfilatov.prayingtimes.telegrambot.entities.TelegramUser;
 import java.util.UUID;
 
 @Repository
-public interface TelegramUserRepository extends CrudRepository<TelegramUser, UUID> {
+public interface TelegramUserRepository extends CrudRepository<TelegramUser, Long> {
     TelegramUser findByChatId(Long chatId);
 }

@@ -1,14 +1,20 @@
 package ru.mfilatov.prayingtimes.telegrambot.entities;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.With;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceCreator;
 
 import java.util.UUID;
 
+@Data
+@AllArgsConstructor(onConstructor = @__(@PersistenceCreator))
 public class TelegramUser {
-    @Id
-    UUID objectId;
-    Long chatId;
-    Double latitude;
-    Double longitude;
-    Integer method;
+    private final @Id Long id;
+    private Long chatId;
+    private Double latitude;
+    private Double longitude;
+    private Integer method;
 }

@@ -12,7 +12,7 @@ import org.springframework.data.jdbc.repository.config.EnableJdbcRepositories;
 
 @SpringBootApplication
 @EnableFeignClients
-@EnableJdbcRepositories
+//@EnableJdbcRepositories
 @Import(org.telegram.telegrambots.starter.TelegramBotStarterConfiguration.class)
 public class TelegrambotApplication {
 
