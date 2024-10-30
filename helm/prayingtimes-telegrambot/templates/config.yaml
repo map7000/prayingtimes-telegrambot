@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prayingtymes-telegrambot-config
+  labels:
+    app: prayingtymes-telegrambot
+data:
+  java_options: {{ .Values.javaOptions | quote }}
+  timeskeeper_url: {{ .Values.timeskeeperUrl | quote }}
