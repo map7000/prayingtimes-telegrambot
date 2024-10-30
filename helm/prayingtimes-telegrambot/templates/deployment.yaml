@@ -1,25 +1,29 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: prayingtymes-telegrambot-deployment
+  name: prayingtimes-telegrambot-deployment
   labels:
-    app: prayingtymes-telegrambot
+    app: prayingtimes-telegrambot
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: prayingtymes-telegrambot
+      app: prayingtimes-telegrambot
   template:
     metadata:
       labels:
-        app: prayingtymes-telegrambot
+        app: prayingtimes-telegrambot
     spec:
       containers:
-        - name: telegrambot
-          image: docker.io/map7000/prayingtimes-telegrambot:0.0.1.SNAPSHOT
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: 8080
-          imagePullPolicy: Always
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
           env:
             - name: JDK_JAVA_OPTIONS
               valueFrom:
