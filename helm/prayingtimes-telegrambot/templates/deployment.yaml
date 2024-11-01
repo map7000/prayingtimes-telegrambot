@@ -24,6 +24,9 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp-volume
           env:
             - name: JDK_JAVA_OPTIONS
               valueFrom:
@@ -45,3 +48,7 @@ spec:
                 secretKeyRef:
                   name: prayingtymes-telegrambot-secret
                   key: bot_token
+      volumes:
+        - name: tmp-volume
+          emptyDir:
+            sizeLimit: 100Mi
