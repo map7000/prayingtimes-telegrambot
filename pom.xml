@@ -16,7 +16,7 @@
 	<properties>
 		<java.version>23</java.version>
 		<spring-cloud.version>2024.0.0</spring-cloud.version>
-		<telegram-bot-api.version>6.9.7.1</telegram-bot-api.version>
+		<telegram-bot-api.version>8.2.0</telegram-bot-api.version>
 		<assertj.version>3.26.3</assertj.version>
 		<h2.version>2.3.232</h2.version>
 	</properties>
@@ -36,7 +36,12 @@
 
 		<dependency>
 			<groupId>org.telegram</groupId>
-			<artifactId>telegrambots-spring-boot-starter</artifactId>
+			<artifactId>telegrambots-springboot-longpolling-starter</artifactId>
+			<version>${telegram-bot-api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.telegram</groupId>
+			<artifactId>telegrambots-client</artifactId>
 			<version>${telegram-bot-api.version}</version>
 		</dependency>
 

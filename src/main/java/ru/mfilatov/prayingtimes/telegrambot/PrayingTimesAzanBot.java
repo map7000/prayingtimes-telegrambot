@@ -4,86 +4,99 @@
  */
 package ru.mfilatov.prayingtimes.telegrambot;
 
-import lombok.SneakyThrows;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
+import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
+import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
+import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
 import ru.mfilatov.prayingtimes.telegrambot.clients.TimeskeeperClient;
 import ru.mfilatov.prayingtimes.telegrambot.entities.Event;
 import ru.mfilatov.prayingtimes.telegrambot.entities.User;
 import ru.mfilatov.prayingtimes.telegrambot.repositories.EventRepository;
 import ru.mfilatov.prayingtimes.telegrambot.repositories.UserRepository;
 
-import java.util.Objects;
-
 @Slf4j
 @Component
-public class PrayingTimesAzanBot extends TelegramLongPollingBot {
+public class PrayingTimesAzanBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
+
+  private final TelegramClient telegramClient;
+
+  String DEFAULT_TEXT = "Source code: https://github.com/map7000/timeskeeper";
 
   private final TimeskeeperClient client;
   private final EventRepository events;
   private final UserRepository users;
 
-  @Value("${BOT_NAME}")
-  String botName;
+  @Value("${BOT_TOKEN}")
+  String botToken;
 
   @Autowired
-  public PrayingTimesAzanBot(@Value("${BOT_TOKEN}") String botToken, TimeskeeperClient client, EventRepository events,
-                             UserRepository users) {
-    super(botToken);
+  public PrayingTimesAzanBot(TimeskeeperClient client, EventRepository events, UserRepository users) {
     this.client = client;
     this.events = events;
     this.users = users;
+
+    this.telegramClient = new OkHttpTelegramClient(getBotToken());
   }
 
   @Override
-  @SneakyThrows
-  public void onUpdateReceived(Update update) {
-    if (update.hasMessage() && update.getMessage().isCommand()) {
-      log.info(
-          "Command request. UserId: {}, Text: {}",
-          update.getMessage().getChatId(),
-          update.getMessage().getText());
+  public String getBotToken() {
+    return botToken;
+  }
 
-      SendMessage message = new SendMessage();
-      message.setChatId(update.getMessage().getChatId().toString());
+  @Override
+  public LongPollingUpdateConsumer getUpdatesConsumer() {
+    return this;
+  }
 
-      var user = users.findByTelegramId(update.getMessage().getChatId());
+  @Override
+  public void consume(Update update) {
+    Long chatId = update.getMessage().getChatId();
+    String text = DEFAULT_TEXT;
+    Double latitude;
+    Double longitude;
 
-      if(Objects.isNull(user)) {
-        message.setText("Please send your location first");
-      } else if(update.getMessage().getText().equals("info")) {
-        message.setText(
-            "This bot currently support no commands, but will send you praying times if you send hims your location. Calculation method Spiritual Administration of Muslims of Russia. Source code for times calculation: https://github.com/map7000/timeskeeper.");
-      } else {
-        message.setText(client
-                .getTimesByCoordinates(
-                        update.getMessage().getLocation().getLatitude(),
-                        update.getMessage().getLocation().getLongitude(),
-                        14)
-                .toString());
-      }
-
-      execute(message);
-    } else if (update.hasMessage() && update.getMessage().hasLocation()) {
-      var eventMessage = String.format("Location request. UserId: %s, Latitude: %s, Longitude: %s",
-              update.getMessage().getChatId(),
+//    if (update.hasMessage() && update.getMessage().isCommand()) {
+//      log.info("Command request. UserId: {}, Text: {}", chatId, update.getMessage().getText());
+//
+//      var user = users.findByTelegramId(chatId);
+//
+//      if (Objects.isNull(user)) {
+//        text = "Please send your location first";
+//      } else if (update.getMessage().getText().equals("info")) {
+//        text =
+//            "This bot currently support no commands, but will send you praying times if you send hims your location. Calculation method Spiritual Administration of Muslims of Russia. Source code for times calculation: https://github.com/map7000/timeskeeper.";
+//      }
+//
+//    }
+    if (update.hasMessage() && update.getMessage().hasLocation()) {
+      var eventMessage =
+          String.format(
+              "Location request. UserId: %s, Latitude: %s, Longitude: %s",
+              chatId,
               update.getMessage().getLocation().getLatitude(),
               update.getMessage().getLocation().getLongitude());
       log.info(eventMessage);
 
-      var user = users.findByTelegramId(update.getMessage().getChatId());
-      if( Objects.isNull(user)) {
+      var user = users.findByTelegramId(chatId);
+      if (Objects.isNull(user)) {
         user = new User();
-        user.setTelegramId(update.getMessage().getChatId());
+        user.setTelegramId(chatId);
       }
 
-      user.setLatitude(update.getMessage().getLocation().getLatitude());
-      user.setLongitude(update.getMessage().getLocation().getLongitude());
+      latitude = update.getMessage().getLocation().getLatitude();
+      longitude = update.getMessage().getLocation().getLongitude();
+
+      user.setLatitude(latitude);
+      user.setLongitude(longitude);
 
       users.save(user);
 
@@ -94,21 +107,15 @@ public class PrayingTimesAzanBot extends TelegramLongPollingBot {
 
       events.save(event);
 
-      SendMessage message = new SendMessage();
-      message.setChatId(update.getMessage().getChatId().toString());
-      message.setText(
-          client
-              .getTimesByCoordinates(
-                  update.getMessage().getLocation().getLatitude(),
-                  update.getMessage().getLocation().getLongitude(),
-                  14)
-              .toString());
-      execute(message);
+      text = client.getTimesByCoordinates(latitude, longitude, 14).toString();
     }
-  }
 
-  @Override
-  public String getBotUsername() {
-    return botName;
+    SendMessage message = SendMessage.builder().chatId(chatId).text(text).build();
+
+    try {
+      telegramClient.execute(message);
+    } catch (TelegramApiException e) {
+      e.printStackTrace();
+    }
   }
 }
