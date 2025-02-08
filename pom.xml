@@ -19,6 +19,7 @@
 		<telegram-bot-api.version>8.2.0</telegram-bot-api.version>
 		<assertj.version>3.26.3</assertj.version>
 		<h2.version>2.3.232</h2.version>
+		<maven.compiler.proc>full</maven.compiler.proc>
 	</properties>
 	<dependencies>
 		<dependency>
