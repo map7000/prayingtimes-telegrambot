@@ -51,8 +51,7 @@ public class PrayingTimesAzanBot
 
   @Override
   public String getBotToken() {
-    return "2025563729:AAFzM_jOS-uKRgDwUgonu7wBws7XGUuAvSo";
-    //    return botToken;
+    return botToken;
   }
 
   @Override

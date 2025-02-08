@@ -12,7 +12,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @SpringBootApplication
 @EnableFeignClients
 @EnableJpaRepositories
-//@Import(org.telegram.telegrambots.starter.TelegramBotStarterConfiguration.class)
 public class TelegrambotApplication {
 
   public static void main(String[] args) {
