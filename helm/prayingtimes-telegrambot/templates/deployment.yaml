@@ -38,6 +38,11 @@ spec:
                 configMapKeyRef:
                   name: prayingtymes-telegrambot-config
                   key: timeskeeper_url
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: prayingtymes-telegrambot-config
+                  key: database_url
             - name: BOT_NAME
               valueFrom:
                 secretKeyRef:
@@ -48,6 +53,16 @@ spec:
                 secretKeyRef:
                   name: prayingtymes-telegrambot-secret
                   key: bot_token
+            - name: DATABASE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: prayingtymes-telegrambot-secret
+                  key: database_username
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: prayingtymes-telegrambot-secret
+                  key: database_password
       volumes:
         - name: tmp-volume
           emptyDir:

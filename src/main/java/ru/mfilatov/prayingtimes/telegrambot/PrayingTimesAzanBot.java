@@ -25,7 +25,8 @@ import ru.mfilatov.prayingtimes.telegrambot.repositories.UserRepository;
 
 @Slf4j
 @Component
-public class PrayingTimesAzanBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
+public class PrayingTimesAzanBot
+    implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
 
   private final TelegramClient telegramClient;
 
@@ -39,7 +40,8 @@ public class PrayingTimesAzanBot implements SpringLongPollingBot, LongPollingSin
   String botToken;
 
   @Autowired
-  public PrayingTimesAzanBot(TimeskeeperClient client, EventRepository events, UserRepository users) {
+  public PrayingTimesAzanBot(
+      TimeskeeperClient client, EventRepository events, UserRepository users) {
     this.client = client;
     this.events = events;
     this.users = users;
@@ -49,7 +51,8 @@ public class PrayingTimesAzanBot implements SpringLongPollingBot, LongPollingSin
 
   @Override
   public String getBotToken() {
-    return botToken;
+    return "2025563729:AAFzM_jOS-uKRgDwUgonu7wBws7XGUuAvSo";
+    //    return botToken;
   }
 
   @Override
@@ -64,19 +67,6 @@ public class PrayingTimesAzanBot implements SpringLongPollingBot, LongPollingSin
     Double latitude;
     Double longitude;
 
-//    if (update.hasMessage() && update.getMessage().isCommand()) {
-//      log.info("Command request. UserId: {}, Text: {}", chatId, update.getMessage().getText());
-//
-//      var user = users.findByTelegramId(chatId);
-//
-//      if (Objects.isNull(user)) {
-//        text = "Please send your location first";
-//      } else if (update.getMessage().getText().equals("info")) {
-//        text =
-//            "This bot currently support no commands, but will send you praying times if you send hims your location. Calculation method Spiritual Administration of Muslims of Russia. Source code for times calculation: https://github.com/map7000/timeskeeper.";
-//      }
-//
-//    }
     if (update.hasMessage() && update.getMessage().hasLocation()) {
       var eventMessage =
           String.format(

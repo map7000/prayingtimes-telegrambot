@@ -17,4 +17,6 @@ service:
   port: 8080
 
 timeskeeperUrl: "http://prayingtymes-timeskeeper-service:8080"
+databaseUrl: "jdbc:postgresql://localhost:5432/postgres"
+
 javaOptions: "-Dspring.config.location=classpath:/application.yaml -XX:InitialRAMPercentage=25.0 -XX:MaxRAMPercentage=75.0"
