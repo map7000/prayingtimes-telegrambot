@@ -29,13 +29,11 @@ public class PrayingTimesAzanBot
     implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
 
   private final TelegramClient telegramClient;
-
-  private String DEFAULT_TEXT = "Source code: https://github.com/map7000/timeskeeper";
-
   private final TimeskeeperClient client;
   private final EventRepository events;
   private final UserRepository users;
   private final String botToken;
+  private final String DEFAULT_TEXT = "Source code: https://github.com/map7000/timeskeeper";
 
   @Autowired
   public PrayingTimesAzanBot(

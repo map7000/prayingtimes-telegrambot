@@ -10,5 +10,4 @@ import org.springframework.stereotype.Repository;
 import ru.mfilatov.prayingtimes.telegrambot.entities.Event;
 
 @Repository
-public interface EventRepository extends JpaRepository<Event, UUID> {
-}
+public interface EventRepository extends JpaRepository<Event, UUID> {}

@@ -12,7 +12,6 @@ import lombok.Setter;
 
 import java.util.UUID;
 
-
 @Setter
 @Getter
 @Entity
@@ -20,12 +19,12 @@ import java.util.UUID;
 @NoArgsConstructor
 @Table(name = "users")
 public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
-    @Version
-    private Long version;
-    private Long telegramId;
-    private Double latitude;
-    private Double longitude;
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
+
+  @Version private Long version;
+  private Long telegramId;
+  private Double latitude;
+  private Double longitude;
 }
