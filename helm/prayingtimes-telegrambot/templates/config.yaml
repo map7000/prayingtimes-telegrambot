@@ -7,3 +7,4 @@ metadata:
 data:
   java_options: {{ .Values.javaOptions | quote }}
   timeskeeper_url: {{ .Values.timeskeeperUrl | quote }}
+  database_url: {{ .Values.databaseUrl | quote }}

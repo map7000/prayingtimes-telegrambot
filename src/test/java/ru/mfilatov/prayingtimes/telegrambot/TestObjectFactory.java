@@ -1,0 +1,27 @@
+/*
+ * Copyright 2023 Mikhail Filatov
+ * SPDX-License-Identifier: Apache-2.0
+ */
+package ru.mfilatov.prayingtimes.telegrambot;
+
+import org.apache.commons.lang3.RandomUtils;
+import ru.mfilatov.prayingtimes.telegrambot.entities.Event;
+import ru.mfilatov.prayingtimes.telegrambot.entities.User;
+
+public class TestObjectFactory {
+    public User createTelegramUser() {
+        var user = new User();
+        user.setTelegramId(RandomUtils.insecure().randomLong());
+        user.setLatitude(RandomUtils.insecure().randomDouble());
+        user.setLongitude(RandomUtils.insecure().randomDouble());
+        return user;
+    }
+
+    public Event createEvent(User user) {
+        var event = new Event();
+        event.setUser(user);
+        event.setTimestamp(System.currentTimeMillis());
+        event.setDescription("Test event");
+        return event;
+    }
+}
