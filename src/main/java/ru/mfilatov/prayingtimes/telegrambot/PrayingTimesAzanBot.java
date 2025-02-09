@@ -30,28 +30,27 @@ public class PrayingTimesAzanBot
 
   private final TelegramClient telegramClient;
 
-  String DEFAULT_TEXT = "Source code: https://github.com/map7000/timeskeeper";
+  private String DEFAULT_TEXT = "Source code: https://github.com/map7000/timeskeeper";
 
   private final TimeskeeperClient client;
   private final EventRepository events;
   private final UserRepository users;
-
-  @Value("${BOT_TOKEN}")
-  String botToken;
+  private final String botToken;
 
   @Autowired
   public PrayingTimesAzanBot(
-      TimeskeeperClient client, EventRepository events, UserRepository users) {
+      TimeskeeperClient client, EventRepository events, UserRepository users, @Value("${BOT_TOKEN}") String token) {
     this.client = client;
     this.events = events;
     this.users = users;
+    this.botToken = token;
 
     this.telegramClient = new OkHttpTelegramClient(getBotToken());
   }
 
   @Override
   public String getBotToken() {
-    return botToken;
+    return this.botToken;
   }
 
   @Override
