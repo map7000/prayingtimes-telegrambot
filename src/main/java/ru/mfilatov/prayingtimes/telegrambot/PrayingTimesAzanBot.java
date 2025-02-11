@@ -4,7 +4,10 @@
  */
 package ru.mfilatov.prayingtimes.telegrambot;
 
+import static ru.mfilatov.prayingtimes.telegrambot.Constants.*;
+
 import java.util.Objects;
+import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,9 +21,9 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 import ru.mfilatov.prayingtimes.telegrambot.clients.TimeskeeperClient;
-import ru.mfilatov.prayingtimes.telegrambot.entities.Event;
+import ru.mfilatov.prayingtimes.telegrambot.counter.RateLimiterService;
 import ru.mfilatov.prayingtimes.telegrambot.entities.User;
-import ru.mfilatov.prayingtimes.telegrambot.repositories.EventRepository;
+import ru.mfilatov.prayingtimes.telegrambot.events.EventHandler;
 import ru.mfilatov.prayingtimes.telegrambot.repositories.UserRepository;
 
 @Slf4j
@@ -30,17 +33,24 @@ public class PrayingTimesAzanBot
 
   private final TelegramClient telegramClient;
   private final TimeskeeperClient client;
-  private final EventRepository events;
+  private final EventHandler events;
   private final UserRepository users;
+  private final RateLimiterService rateLimiter;
   private final String botToken;
-  private final String DEFAULT_TEXT = "Source code: https://github.com/map7000/timeskeeper";
+
+  private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("^[a-zA-Z0-9\\s.,!?-]+$");
 
   @Autowired
   public PrayingTimesAzanBot(
-      TimeskeeperClient client, EventRepository events, UserRepository users, @Value("${BOT_TOKEN}") String token) {
+      TimeskeeperClient client,
+      EventHandler events,
+      UserRepository users,
+      RateLimiterService rateLimiter,
+      @Value("${BOT_TOKEN}") String token) {
     this.client = client;
     this.events = events;
     this.users = users;
+    this.rateLimiter = rateLimiter;
     this.botToken = token;
 
     this.telegramClient = new OkHttpTelegramClient(getBotToken());
@@ -58,20 +68,33 @@ public class PrayingTimesAzanBot
 
   @Override
   public void consume(Update update) {
-    Long chatId = update.getMessage().getChatId();
-    String text = DEFAULT_TEXT;
     Double latitude;
     Double longitude;
 
-    if (update.hasMessage() && update.getMessage().hasLocation()) {
-      var eventMessage =
-          String.format(
-              "Location request. UserId: %s, Latitude: %s, Longitude: %s",
-              chatId,
-              update.getMessage().getLocation().getLatitude(),
-              update.getMessage().getLocation().getLongitude());
-      log.info(eventMessage);
+    Long chatId = update.getMessage().getChatId();
 
+    if (rateLimiter.isRateLimited(chatId)) {
+      sendMessage(chatId, "⚠️ Too many requests. Please try again later.");
+      return;
+    }
+
+    if (update.hasMessage() && update.getMessage().hasText()) {
+      if (!isValidInput(update.getMessage().getText())) {
+        sendMessage(
+            chatId, "⚠️ Invalid input. Please use only letters, numbers, and common symbols.");
+        return;
+      }
+      var message = update.getMessage();
+
+      switch (message.getText()) {
+        case "/start" -> sendStartMenu(chatId);
+        case "/help" -> sendHelpMessage(chatId);
+        case "/prayertimes" -> sendPrayerTimes(chatId);
+        default -> sendDefaultMessage(chatId, message.getText());
+      }
+    }
+
+    if (update.hasMessage() && update.getMessage().hasLocation()) {
       var user = users.findByTelegramId(chatId);
       if (Objects.isNull(user)) {
         user = new User();
@@ -85,23 +108,43 @@ public class PrayingTimesAzanBot
       user.setLongitude(longitude);
 
       users.save(user);
+      events.newUser(chatId);
 
-      var event = new Event();
-      event.setUser(user);
-      event.setTimestamp(System.currentTimeMillis());
-      event.setDescription(eventMessage);
-
-      events.save(event);
-
-      text = client.getTimesByCoordinates(latitude, longitude, 14).toString();
+      sendMessage(chatId, client.getTimesByCoordinates(latitude, longitude, 14).toString());
     }
+  }
 
+  private boolean isValidInput(String input) {
+    return ALPHANUMERIC_PATTERN.matcher(input).matches();
+  }
+
+  private void sendMessage(Long chatId, String text) {
     SendMessage message = SendMessage.builder().chatId(chatId).text(text).build();
-
     try {
       telegramClient.execute(message);
     } catch (TelegramApiException e) {
-      e.printStackTrace();
+      events.error(chatId, "Failed to send message: " + e.getMessage());
     }
+  }
+
+  private void sendHelpMessage(Long chatId) {
+    events.help(chatId);
+    sendMessage(chatId, HELP_MESSAGE);
+  }
+
+  private void sendPrayerTimes(Long chatId) {
+    String text = "🕋Please share your location to get prayer times.";
+    events.timesRequest(chatId);
+    sendMessage(chatId, text);
+  }
+
+  private void sendDefaultMessage(Long chatId, String description) {
+    events.unknownCommand(chatId, description);
+    sendMessage(chatId, DEFAULT_MESSAGE);
+  }
+
+  private void sendStartMenu(Long chatId) {
+    events.start(chatId);
+    sendMessage(chatId, MENU_MESSAGE);
   }
 }

@@ -21,24 +21,16 @@ import ru.mfilatov.prayingtimes.telegrambot.repositories.UserRepository;
 public class EventRepositoryTest {
 
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
     private EventRepository eventRepository;
 
     @Test
     public void testSaveEvent() {
-        User user = new TestObjectFactory().createTelegramUser();
-        userRepository.save(user);
 
-        Event event = new TestObjectFactory().createEvent(user);
+        Event event = new TestObjectFactory().createEvent();
         eventRepository.save(event);
 
         var savedEvent = eventRepository.findById(event.getId()).orElse(null);
         assertThat(savedEvent).as("Can find event by id").isNotNull();
         assertThat(savedEvent).as("Event data saved correctly").isEqualTo(event);
-
-        var savedUser = savedEvent.getUser();
-        assertThat(savedUser).as("Can find user by event").isNotNull();
-        assertThat(savedUser).as("User data saved correctly").isEqualTo(user);
     }
 }

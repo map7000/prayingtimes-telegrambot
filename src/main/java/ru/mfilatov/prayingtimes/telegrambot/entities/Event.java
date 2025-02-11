@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.mfilatov.prayingtimes.telegrambot.events.EventType;
 
 @Setter
 @Getter
@@ -21,11 +22,8 @@ public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    @Version
-    private Long version;
     private Long timestamp;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="USER_ID")
-    private User user;
+    private Long chatId;
+    private EventType eventType;
     private String description;
 }
