@@ -38,7 +38,7 @@ public class PrayingTimesAzanBot
   private final RateLimiterService rateLimiter;
   private final String botToken;
 
-  private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("^[a-zA-Z0-9\\s.,!?-]+$");
+  private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("^[a-zA-Z0-9\\s.,!/?-]+$");
 
   @Autowired
   public PrayingTimesAzanBot(
@@ -97,20 +97,18 @@ public class PrayingTimesAzanBot
     if (update.hasMessage() && update.getMessage().hasLocation()) {
       var user = users.findByTelegramId(chatId);
       if (Objects.isNull(user)) {
+        events.newUser(chatId);
         user = new User();
         user.setTelegramId(chatId);
       }
 
-      latitude = update.getMessage().getLocation().getLatitude();
-      longitude = update.getMessage().getLocation().getLongitude();
-
-      user.setLatitude(latitude);
-      user.setLongitude(longitude);
+      user.setLatitude(update.getMessage().getLocation().getLatitude());
+      user.setLongitude(update.getMessage().getLocation().getLongitude());
 
       users.save(user);
-      events.newUser(chatId);
+      events.changeLocation(chatId);
 
-      sendMessage(chatId, client.getTimesByCoordinates(latitude, longitude, 14).toString());
+      sendMessage(chatId, getPrayingTimes(user));
     }
   }
 
@@ -133,9 +131,14 @@ public class PrayingTimesAzanBot
   }
 
   private void sendPrayerTimes(Long chatId) {
-    String text = "🕋Please share your location to get prayer times.";
     events.timesRequest(chatId);
-    sendMessage(chatId, text);
+    var user = users.findByTelegramId(chatId);
+    if (Objects.isNull(user)) {
+      sendMessage(chatId, "🕋Please share your location to get prayer times.");
+      return;
+    }
+
+    sendMessage(chatId, getPrayingTimes(user));
   }
 
   private void sendDefaultMessage(Long chatId, String description) {
@@ -146,5 +149,22 @@ public class PrayingTimesAzanBot
   private void sendStartMenu(Long chatId) {
     events.start(chatId);
     sendMessage(chatId, MENU_MESSAGE);
+  }
+
+  private String getPrayingTimes(User user) {
+    var times = client.getTimesByCoordinates(user.getLatitude(), user.getLongitude(), 14);
+    return String.format(
+        "Date: %s Timezone: %s\nMethod: %s\nFajr: %s\nSunrise: %s\n"
+            + "Dhuhr: %s\nAsr: %s\nSunset: %s\nMaghrib: %s\nIsha: %s",
+        times.date(),
+        times.timezone(),
+        times.method(),
+        times.fajr(),
+        times.sunrise(),
+        times.dhuhr(),
+        times.asr(),
+        times.sunset(),
+        times.maghrib(),
+        times.isha());
   }
 }
