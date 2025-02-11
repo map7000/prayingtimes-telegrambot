@@ -1,4 +1,4 @@
-package ru.mfilatov.prayingtimes.telegrambot.counter;
+package ru.mfilatov.prayingtimes.telegrambot.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import ru.mfilatov.prayingtimes.telegrambot.entities.Counter;

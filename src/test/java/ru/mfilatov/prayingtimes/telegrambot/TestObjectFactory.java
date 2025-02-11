@@ -7,6 +7,7 @@ package ru.mfilatov.prayingtimes.telegrambot;
 import org.apache.commons.lang3.RandomUtils;
 import ru.mfilatov.prayingtimes.telegrambot.entities.Event;
 import ru.mfilatov.prayingtimes.telegrambot.entities.User;
+import ru.mfilatov.prayingtimes.telegrambot.events.EventType;
 
 public class TestObjectFactory {
     public User createTelegramUser() {
@@ -17,9 +18,10 @@ public class TestObjectFactory {
         return user;
     }
 
-    public Event createEvent(User user) {
+    public Event createEvent() {
         var event = new Event();
-        event.setUser(user);
+        event.setEventType(EventType.START);
+        event.setChatId(1L);
         event.setTimestamp(System.currentTimeMillis());
         event.setDescription("Test event");
         return event;
