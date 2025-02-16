@@ -27,4 +27,5 @@ public class User {
   private Long telegramId;
   private Double latitude;
   private Double longitude;
+  private String method;
 }
