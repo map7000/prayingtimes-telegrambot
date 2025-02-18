@@ -8,10 +8,12 @@ public record PrayingTimes(
     String date,
     String timezone,
     String method,
+    String imsak,
     String fajr,
     String sunrise,
     String dhuhr,
     String asr,
     String sunset,
     String maghrib,
-    String isha) {}
+    String isha,
+    String midnight) {}

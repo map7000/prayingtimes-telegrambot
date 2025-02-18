@@ -160,7 +160,7 @@ public class PrayingTimesAzanBot
 
   private void setMethod(String text, Long chatId) {
     var method = text.replace("/set_method_", "");
-    if(Arrays.stream(CalculationMethods.values()).anyMatch(a->a.name().equals(method))) {
+    if (Arrays.stream(CalculationMethods.values()).anyMatch(a -> a.name().equals(method))) {
       var user = users.findByTelegramId(chatId);
       user.setMethod(method);
       users.save(user);
@@ -171,19 +171,22 @@ public class PrayingTimesAzanBot
   }
 
   private String getPrayingTimes(User user) {
-    var times = client.getTimesByCoordinates(user.getLatitude(), user.getLongitude(), user.getMethod());
+    var times =
+        client.getTimesByCoordinates(user.getLatitude(), user.getLongitude(), user.getMethod());
     return String.format(
-        "Date: %s Timezone: %s\nMethod: %s\nFajr: %s\nSunrise: %s\n"
-            + "Dhuhr: %s\nAsr: %s\nSunset: %s\nMaghrib: %s\nIsha: %s",
+        "Date: %s Timezone: %s\nMethod: %s\nImsak:\t%s\nFajr:\t%s\nSunrise:\t%s\n"
+            + "Dhuhr:\t%s\nAsr:\t%s\nSunset:\t%s\nMaghrib:\t%s\nIsha:\t%s,\nMidnight:\t%s",
         times.date(),
         times.timezone(),
         times.method(),
+        times.imsak(),
         times.fajr(),
         times.sunrise(),
         times.dhuhr(),
         times.asr(),
         times.sunset(),
         times.maghrib(),
-        times.isha());
+        times.isha(),
+        times.midnight());
   }
 }
