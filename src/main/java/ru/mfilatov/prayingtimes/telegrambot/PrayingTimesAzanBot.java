@@ -6,6 +6,7 @@ package ru.mfilatov.prayingtimes.telegrambot;
 
 import static ru.mfilatov.prayingtimes.telegrambot.Constants.*;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
+import ru.mfilatov.prayingtimes.calculator.enums.CalculationMethods;
 import ru.mfilatov.prayingtimes.telegrambot.clients.TimeskeeperClient;
 import ru.mfilatov.prayingtimes.telegrambot.counter.RateLimiterService;
 import ru.mfilatov.prayingtimes.telegrambot.entities.User;
@@ -38,7 +40,7 @@ public class PrayingTimesAzanBot
   private final RateLimiterService rateLimiter;
   private final String botToken;
 
-  private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("^[a-zA-Z0-9\\s.,!/?-]+$");
+  private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("^[a-zA-Z0-9\\s.,!/?-_]+$");
 
   @Autowired
   public PrayingTimesAzanBot(
@@ -68,8 +70,6 @@ public class PrayingTimesAzanBot
 
   @Override
   public void consume(Update update) {
-    Double latitude;
-    Double longitude;
 
     Long chatId = update.getMessage().getChatId();
 
@@ -90,6 +90,8 @@ public class PrayingTimesAzanBot
         case "/start" -> sendStartMenu(chatId);
         case "/help" -> sendHelpMessage(chatId);
         case "/prayertimes" -> sendPrayerTimes(chatId);
+        case String s when s.startsWith("/set_method") -> setMethod(message.getText(), chatId);
+        case "/get_methods" -> getMethods(chatId);
         default -> sendDefaultMessage(chatId, message.getText());
       }
     }
@@ -100,6 +102,7 @@ public class PrayingTimesAzanBot
         events.newUser(chatId);
         user = new User();
         user.setTelegramId(chatId);
+        user.setMethod("MWL");
       }
 
       user.setLatitude(update.getMessage().getLocation().getLatitude());
@@ -151,20 +154,39 @@ public class PrayingTimesAzanBot
     sendMessage(chatId, MENU_MESSAGE);
   }
 
+  private void getMethods(Long chatId) {
+    sendMessage(chatId, POSSIBLE_CALCULATION_METHODS);
+  }
+
+  private void setMethod(String text, Long chatId) {
+    var method = text.replace("/set_method_", "");
+    if (Arrays.stream(CalculationMethods.values()).anyMatch(a -> a.name().equals(method))) {
+      var user = users.findByTelegramId(chatId);
+      user.setMethod(method);
+      users.save(user);
+      sendMessage(chatId, "Calculation method was successfully set");
+    } else {
+      sendMessage(chatId, "Unknown calculation method");
+    }
+  }
+
   private String getPrayingTimes(User user) {
-    var times = client.getTimesByCoordinates(user.getLatitude(), user.getLongitude(), 14);
+    var times =
+        client.getTimesByCoordinates(user.getLatitude(), user.getLongitude(), user.getMethod());
     return String.format(
-        "Date: %s Timezone: %s\nMethod: %s\nFajr: %s\nSunrise: %s\n"
-            + "Dhuhr: %s\nAsr: %s\nSunset: %s\nMaghrib: %s\nIsha: %s",
+        "Date: %s Timezone: %s\nMethod: %s\nImsak:\t%s\nFajr:\t%s\nSunrise:\t%s\n"
+            + "Dhuhr:\t%s\nAsr:\t%s\nSunset:\t%s\nMaghrib:\t%s\nIsha:\t%s,\nMidnight:\t%s",
         times.date(),
         times.timezone(),
         times.method(),
+        times.imsak(),
         times.fajr(),
         times.sunrise(),
         times.dhuhr(),
         times.asr(),
         times.sunset(),
         times.maghrib(),
-        times.isha());
+        times.isha(),
+        times.midnight());
   }
 }

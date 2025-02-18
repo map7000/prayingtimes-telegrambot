@@ -15,5 +15,5 @@ public interface TimeskeeperClient {
   PrayingTimes getTimesByCoordinates(
       @RequestParam(value = "latitude") Double latitude,
       @RequestParam(value = "longitude") Double longitude,
-      @RequestParam(value = "method") Integer method);
+      @RequestParam(value = "method") String method);
 }
