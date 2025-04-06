@@ -19,11 +19,12 @@ import ru.mfilatov.prayingtimes.telegrambot.events.EventType;
 @NoArgsConstructor
 @Table(name = "events")
 public class Event {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
-    private Long timestamp;
-    private Long chatId;
-    private EventType eventType;
-    private String description;
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
+
+  private Long timestamp;
+  private Long chatId;
+  private EventType eventType;
+  private String description;
 }

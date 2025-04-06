@@ -1,3 +1,7 @@
+/*
+ * Copyright 2023 Mikhail Filatov
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package ru.mfilatov.prayingtimes.telegrambot.entities;
 
 import jakarta.persistence.Entity;
@@ -13,14 +17,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @Table(name = "counter")
 public class Counter {
-    @Id
-    private Long chatId;
-    private Integer counterValue;
-    private Long initialTime;
+  @Id private Long chatId;
+  private Integer counterValue;
+  private Long initialTime;
 
-    public Counter(Long chatId) {
-        this.chatId = chatId;
-        counterValue = 0;
-        initialTime = System.currentTimeMillis();
-    }
+  public Counter(Long chatId) {
+    this.chatId = chatId;
+    counterValue = 0;
+    initialTime = System.currentTimeMillis();
+  }
 }
